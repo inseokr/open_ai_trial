@@ -19,18 +19,18 @@ def get_access_token(username, password, login, url):
         raise Exception("Failed to authenticate")
     return
 
-def test_ls_get (route, url, token = ''):
+def test_ls_get (route, url, params = {}, token = ''):
     """ Function to access unprotected and protected route using the JWT token. """
     url = f'{url}/{route}'
     print (f'url: {url}')
     headers = {'Authorization': f'Bearer {token}'}
-    rsp = requests.get(url, headers = headers, verify=certifi.where())
+    rsp = requests.get(url, params = params, headers = headers, verify=certifi.where())
     print(rsp.status_code)
     try:
         print(json.dumps(rsp.json()))
     except Exception as e:
         print(str(e))
-    return
+    return rsp
 
 def test_ls_post (data_out: dict, route: str, url, token = '', output = 'txt', target = 'agent')-> str:
     headers = {
