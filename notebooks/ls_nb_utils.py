@@ -2,7 +2,8 @@ import requests
 import json
 import os
 import certifi
-
+import jwt
+import base64
 
 def get_access_token(username, password, login, url):
     """ Function to authenticate and receive access token from the server. """
@@ -54,4 +55,17 @@ def test_ls_post (data_out: dict, route: str, url, token = '', output = 'txt', t
         raise Exception("Failed to authenticate")
     return
     
+def decode_jwt(token):
+    header, payload, signature = token.split('.')
+    header_decoded = base64.urlsafe_b64decode(add_padding(header)).decode('utf-8')
+    payload_decoded = base64.urlsafe_b64decode(add_padding(payload)).decode('utf-8')
 
+    return {
+        "header": json.loads(header_decoded),
+        "payload": json.loads(payload_decoded),
+        "signature": signature
+    }
+
+def add_padding(str):
+    """Adds padding to the Base64 encoded string to make it valid."""
+    return str + '=' * (4 - len(str) % 4)
