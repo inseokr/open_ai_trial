@@ -40,6 +40,7 @@ def test_ls_post (data_out: dict, route: str, url, token = '', output = 'txt', t
     }
     url = f'{url}/{route}'
     response = requests.post(url, json=data_out, headers=headers)
+    print (response)
     if response.status_code == 200:
         data = response.json()
         if target == 'agent':
