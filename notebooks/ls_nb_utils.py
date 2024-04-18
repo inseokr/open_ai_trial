@@ -13,6 +13,7 @@ def get_access_token(username, password, login, url):
            "reportLoginResult": "true"}
     print (url_r)
     response = requests.post(url_r,json = js)
+
     if response.status_code == 200:
         return response.json()
     else:
@@ -27,6 +28,10 @@ def test_ls_get (route, url, params = {}, token = ''):
     headers = {'Authorization': f'Bearer {token}'}
     rsp = requests.get(url, params = params, headers = headers, verify=certifi.where())
     print(rsp.status_code)
+    print (rsp.request.headers)
+    print (rsp.request.method)
+    # print (rsp.request.params)
+    print (rsp.request.url)
     try:
         print(json.dumps(rsp.json()))
     except Exception as e:
@@ -40,6 +45,12 @@ def test_ls_post (data_out: dict, route: str, url, token = '', output = 'txt', t
     }
     url = f'{url}/{route}'
     response = requests.post(url, json=data_out, headers=headers)
+    rsp = response
+    print(rsp.status_code)
+    print (rsp.request.headers)
+    print (rsp.request.method)
+    print (rsp.request.url)
+
     print (response)
     if response.status_code == 200:
         data = response.json()
@@ -70,3 +81,44 @@ def decode_jwt(token):
 def add_padding(str):
     """Adds padding to the Base64 encoded string to make it valid."""
     return str + '=' * (4 - len(str) % 4)
+
+def req_ai2(client, content, model_name_system = "gpt-4", model_name_report = "gpt-3.5-turbo", system_message = '', report_message = ''):
+    if len(system_message) > 0:
+        messages=[
+                {"role": "system", "content": system_message},
+                {"role": "user", "content": content}
+                ]
+        response = client.chat.completions.create(
+                model=model_name_system,
+                temperature = 0,
+                seed = 1234,
+                messages=messages,
+                )
+        answer = response.choices[0].message.content  
+    else: 
+        answer = content
+    # print(answer)
+
+    if len(report_message) >0 :
+        messages=[
+                {"role": "system", "content": report_message}, 
+                {"role": "user", "content": answer}]
+        
+        response = client.chat.completions.create(
+                model=model_name_report,
+                temperature = 0,
+                seed = 1234,
+                messages=messages,
+                response_format={ "type": "json_object" }
+                )
+        jobject = response.choices[0].message.content
+    else:
+        jobject = answer
+    # jobject = answer
+    try:
+        ret = json.loads(jobject)
+    except:
+        ret = {'text':answer}  
+    # print (ret)      
+    return ret, answer
+
